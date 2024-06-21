@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { create, all } from 'mathjs';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { Container, Paper } from '@mui/material';
+import { Container, Paper, Button } from '@mui/material';
 import styled from 'styled-components';
 import Display from './Display';
 import ButtonGrid from './ButtonGrid';
@@ -105,9 +105,6 @@ const Calculator = () => {
   const handleScientificFunction = (func) => {
     try {
       let value = parseFloat(expression);
-      if (!useRadians) {
-        value = math.unit(value, 'deg').toNumber('rad');
-      }
       let result;
       switch (func) {
         case 'sin':
@@ -134,11 +131,17 @@ const Calculator = () => {
         case 'log₁₀':
           result = math.log10(value);
           break;
-        case 'x²':
+        case 'x²': // Square function
           result = math.square(value);
           break;
         case 'x³':
           result = math.cube(value);
+          break;
+        case 'xʸ':
+          result = math.pow(value, parseFloat(expression.slice(expression.indexOf('x') + 1)));
+          break;
+        case 'ʸ√x':
+          result = math.nthRoot(value, parseFloat(expression.slice(expression.indexOf('ʸ') + 1)));
           break;
         case '²√x':
           result = math.sqrt(value);
@@ -171,16 +174,21 @@ const Calculator = () => {
           result = -value;
           break;
         case '%':
-          result = value / 100;
+          result = math.divide(value, 100);
           break;
         default:
           result = value;
       }
+      if (isNaN(result)) {
+        throw new Error('Invalid operation');
+      }
       setExpression(result.toString());
-    } catch {
+    } catch (error) {
+      console.error('Error in handleScientificFunction:', error);
       setResult('Error');
     }
   };
+  
 
   const toggleRadians = () => {
     setUseRadians(!useRadians);
@@ -206,7 +214,7 @@ const Calculator = () => {
             onScientificFunction={handleScientificFunction}
             toggleRadians={toggleRadians}
           />
-          <button onClick={toggleTheme}>Toggle Theme</button>
+          <Button onClick={toggleTheme} variant="contained" color="primary" sx={{ mt: 2 }}>Toggle Theme</Button>
           <History>
             <h3>History</h3>
             <ul>
@@ -223,8 +231,8 @@ const Calculator = () => {
 };
 
 const History = styled.div`
-  margin-top: 1px;
-  padding: 2px;
+  margin-top: 20px;
+  padding: 10px;
   border: 1px solid ${(props) => props.theme.border};
   border-radius: 4px;
   background-color: ${(props) => props.theme.displayBackground};
