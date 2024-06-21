@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { create, all } from 'mathjs';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { Container, Paper, Button, Grid } from '@mui/material';
+import { Container, Paper } from '@mui/material';
 import styled from 'styled-components';
 import Display from './Display';
 import ButtonGrid from './ButtonGrid';
+import ConfettiExplosion from 'react-confetti-explosion'; // Import the ConfettiExplosion component
 
 const math = create(all);
 
@@ -45,10 +46,11 @@ const Calculator = () => {
   const [useRadians, setUseRadians] = useState(false);
   const [theme, setTheme] = useState(darkTheme);
   const [history, setHistory] = useState([]);
-  const [showConfetti, setShowConfetti] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false); // State to control confetti visibility
 
   const handleButtonClick = (value) => {
     setExpression(prev => prev + value);
+    setShowConfetti(false); // Reset confetti when new input is entered
   };
 
   const evaluateExpression = () => {
@@ -56,16 +58,21 @@ const Calculator = () => {
       const evaluatedResult = math.evaluate(expression);
       setResult(evaluatedResult.toString());
       setExpression(evaluatedResult.toString());
-      setHistory(prevHistory => [...prevHistory, `${expression} = ${evaluatedResult}`]); // Corrected interpolation
+      setHistory(prevHistory => [...prevHistory, `${expression} = ${evaluatedResult}`]);
+      
+      // Check if expression involves 5 and 6
+      if (expression.includes('5') && expression.includes('6')) {
+        setShowConfetti(true); // Trigger confetti explosion
+      }
     } catch {
       setResult('Error');
     }
   };
-  
 
   const clearExpression = () => {
     setExpression('');
     setResult('');
+    setShowConfetti(false); // Clear confetti on clear
   };
 
   const handleMemoryClear = () => {
@@ -74,6 +81,7 @@ const Calculator = () => {
 
   const handleMemoryRecall = () => {
     setExpression(memory.toString());
+    setShowConfetti(false); // Reset confetti when memory is recalled
   };
 
   const handleMemoryAdd = () => {
@@ -110,6 +118,15 @@ const Calculator = () => {
           break;
         case 'tan':
           result = math.tan(value);
+          break;
+        case 'sinh':
+          result = math.sinh(value);
+          break;
+        case 'cosh':
+          result = math.cosh(value);
+          break;
+        case 'tanh':
+          result = math.tanh(value);
           break;
         case 'ln':
           result = math.log(value);
@@ -149,6 +166,12 @@ const Calculator = () => {
           break;
         case 'Rand':
           result = Math.random();
+          break;
+        case '+/-':
+          result = -value;
+          break;
+        case '%':
+          result = value / 100;
           break;
         default:
           result = value;
@@ -192,6 +215,7 @@ const Calculator = () => {
               ))}
             </ul>
           </History>
+          {showConfetti && <ConfettiExplosion />} {/* Render confetti if showConfetti is true */}
         </Paper>
       </Container>
     </ThemeProvider>
@@ -199,8 +223,8 @@ const Calculator = () => {
 };
 
 const History = styled.div`
-  margin-top: 20px;
-  padding: 10px;
+  margin-top: 1px;
+  padding: 2px;
   border: 1px solid ${(props) => props.theme.border};
   border-radius: 4px;
   background-color: ${(props) => props.theme.displayBackground};
