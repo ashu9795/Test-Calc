@@ -125,8 +125,8 @@ const Calculator = () => {
         case 'tanh':
           result = math.tanh(value);
           break;
-        case 'ln':
-          result = math.log(value);
+          case 'ln': // Corrected case to 'ln' instead of 'Math.ln'
+          result = math.log(value); // Use math.log for natural logarithm
           break;
         case 'log₁₀':
           result = math.log10(value);
