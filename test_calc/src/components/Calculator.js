@@ -1,91 +1,71 @@
 import React, { useState } from 'react';
+import { create, all } from 'mathjs';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { Container, Paper, Button, Grid } from '@mui/material';
+import styled from 'styled-components';
 import Display from './Display';
 import ButtonGrid from './ButtonGrid';
-import { create, all } from 'mathjs';
-import ConfettiExplosion from 'react-confetti-explosion';
-import styled, { ThemeProvider, createGlobalStyle } from 'styled-components';
 
-// Create a mathjs instance with all functions
 const math = create(all);
 
-const lightTheme = {
-  background: '#f3f3f3',
-  text: '#000',
-  buttonBackground: '#e0e0e0',
-  buttonHoverBackground: '#d0d0d0',
-  displayBackground: '#fff',
-  border: '#ccc'
-};
-
-const darkTheme = {
-  background: '#333',
-  text: '#fff',
-  buttonBackground: '#555',
-  buttonHoverBackground: '#444',
-  displayBackground: '#000',
-  border: '#444'
-};
-
-const GlobalStyle = createGlobalStyle`
-  body {
-    background-color: ${(props) => props.theme.background};
-    color: ${(props) => props.theme.text};
-    transition: background-color 0.3s ease, color 0.3s ease;
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    background: {
+      default: '#333'
+    },
+    primary: {
+      main: '#f39c12'
+    },
+    secondary: {
+      main: '#ecf0f1'
+    }
   }
-`;
+});
+
+const lightTheme = createTheme({
+  palette: {
+    mode: 'light',
+    background: {
+      default: '#fff'
+    },
+    primary: {
+      main: '#f39c12'
+    },
+    secondary: {
+      main: '#333'
+    }
+  }
+});
 
 const Calculator = () => {
   const [expression, setExpression] = useState('');
   const [result, setResult] = useState('');
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [isResult, setIsResult] = useState(false);
   const [memory, setMemory] = useState(0);
-  const [useRadians, setUseRadians] = useState(true);
-  const [theme, setTheme] = useState(lightTheme);
+  const [useRadians, setUseRadians] = useState(false);
+  const [theme, setTheme] = useState(darkTheme);
   const [history, setHistory] = useState([]);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const handleButtonClick = (value) => {
-    if (isResult && !isNaN(value)) {
-      setExpression(value);
-    } else {
-      setExpression((prevExpression) => prevExpression + value);
-    }
-    setShowConfetti(false);
-    setIsResult(false);
+    setExpression(prev => prev + value);
   };
 
   const evaluateExpression = () => {
     try {
-      if (expression.includes('/0')) {
-        setResult('Error');
-        setExpression('');
-        setIsResult(false);
-        return;
-      }
       const evaluatedResult = math.evaluate(expression);
       setResult(evaluatedResult.toString());
       setExpression(evaluatedResult.toString());
-      checkForConfetti(expression);
-      setHistory((prevHistory) => [...prevHistory, `${expression} = ${evaluatedResult}`]);
-      setIsResult(true);
-    } catch (error) {
+      setHistory(prevHistory => [...prevHistory, `${expression} = ${evaluatedResult}`]); // Corrected interpolation
+    } catch {
       setResult('Error');
-      setExpression('');
-      setIsResult(false);
     }
   };
+  
 
   const clearExpression = () => {
     setExpression('');
     setResult('');
-    setShowConfetti(false);
-    setIsResult(false);
-  };
-
-  const checkForConfetti = (expression) => {
-    if (expression.includes('5') && expression.includes('6')) {
-      setShowConfetti(true);
-    }
   };
 
   const handleMemoryClear = () => {
@@ -100,10 +80,8 @@ const Calculator = () => {
     try {
       const value = math.evaluate(expression);
       setMemory(memory + value);
-    } catch (error) {
+    } catch {
       setResult('Error');
-      setExpression('');
-      setIsResult(false);
     }
   };
 
@@ -111,10 +89,8 @@ const Calculator = () => {
     try {
       const value = math.evaluate(expression);
       setMemory(memory - value);
-    } catch (error) {
+    } catch {
       setResult('Error');
-      setExpression('');
-      setIsResult(false);
     }
   };
 
@@ -134,15 +110,6 @@ const Calculator = () => {
           break;
         case 'tan':
           result = math.tan(value);
-          break;
-        case 'sinh':
-          result = math.sinh(value);
-          break;
-        case 'cosh':
-          result = math.cosh(value);
-          break;
-        case 'tanh':
-          result = math.tanh(value);
           break;
         case 'ln':
           result = math.log(value);
@@ -187,11 +154,8 @@ const Calculator = () => {
           result = value;
       }
       setExpression(result.toString());
-      setIsResult(true);
-    } catch (error) {
+    } catch {
       setResult('Error');
-      setExpression('');
-      setIsResult(false);
     }
   };
 
@@ -205,45 +169,34 @@ const Calculator = () => {
 
   return (
     <ThemeProvider theme={theme}>
-      <GlobalStyle />
-      <CalculatorWrapper>
-        <Display expression={expression} result={result} />
-        <ButtonGrid
-          onButtonClick={handleButtonClick}
-          onEvaluate={evaluateExpression}
-          onClear={clearExpression}
-          onMemoryClear={handleMemoryClear}
-          onMemoryRecall={handleMemoryRecall}
-          onMemoryAdd={handleMemoryAdd}
-          onMemorySubtract={handleMemorySubtract}
-          onScientificFunction={handleScientificFunction}
-          toggleRadians={toggleRadians}
-        />
-        {showConfetti && <ConfettiExplosion />}
-        <button onClick={toggleTheme}>Toggle Theme</button>
-        <History>
-          <h3>History</h3>
-          <ul>
-            {history.map((entry, index) => (
-              <li key={index}>{entry}</li>
-            ))}
-          </ul>
-        </History>
-      </CalculatorWrapper>
+      <Container maxWidth="sm" sx={{ mt: 5 }}>
+        <Paper elevation={3} sx={{ p: 3 }}>
+          <Display expression={expression} result={result} />
+          <ButtonGrid
+            onButtonClick={handleButtonClick}
+            onEvaluate={evaluateExpression}
+            onClear={clearExpression}
+            onMemoryClear={handleMemoryClear}
+            onMemoryRecall={handleMemoryRecall}
+            onMemoryAdd={handleMemoryAdd}
+            onMemorySubtract={handleMemorySubtract}
+            onScientificFunction={handleScientificFunction}
+            toggleRadians={toggleRadians}
+          />
+          <button onClick={toggleTheme}>Toggle Theme</button>
+          <History>
+            <h3>History</h3>
+            <ul>
+              {history.map((entry, index) => (
+                <li key={index}>{entry}</li>
+              ))}
+            </ul>
+          </History>
+        </Paper>
+      </Container>
     </ThemeProvider>
   );
 };
-
-const CalculatorWrapper = styled.div`
-  max-width: 400px;
-  margin: 20px auto;
-  padding: 20px;
-  border: 1px solid ${(props) => props.theme.border};
-  border-radius: 8px;
-  background-color: ${(props) => props.theme.background};
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  color: ${(props) => props.theme.text};
-`;
 
 const History = styled.div`
   margin-top: 20px;

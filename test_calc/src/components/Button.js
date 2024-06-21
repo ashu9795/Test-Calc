@@ -1,3 +1,4 @@
+// button.js
 import React from 'react';
 import styled from 'styled-components';
 
@@ -8,7 +9,7 @@ const Button = ({ children, onClick }) => {
 const ButtonStyled = styled.button`
   background-color: #e0e0e0;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 1.2rem;
   padding: 20px;
   cursor: pointer;
